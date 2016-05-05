@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Title</title>
+    <meta charset="utf-8">
+    <style>
+      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+      body { font-family: 'Droid Serif'; }
+      h1, h2, h3 {
+        font-family: 'Yanone Kaffeesatz';
+        font-weight: normal;
+      }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+
+class: left, middle
+background-image: url(catyarn.jpg)
+
+# Avoiding Thread-Safety Bugs
+
+---
+
+class: center, middle
+
+# "Avoid mutating global state at runtime."
+
+---
+
+# Globals in Ruby
+
+```ruby
+$regular_global_variable = 'some data'
+
+Constant = { key: 'value' }
+
+module Namespace
+  HiddenNotHidden = :value
+end
+
+class MyClass
+end
+
+MyClass = Class.new
+```
+
+---
+
+# *Working with Ruby Threads* by Jesse Storimer
+
+**thx Josh Mills**
+
+"Thread safety" chapter gets right into race conditions, mutexes, etc.
+
+ - Let's avoid making our own threads in application code.
+
+"Writing Thread-Safe Code" chapter sez:
+
+- "Idiomatic Ruby code is most often thread-safe Ruby code."
+- "Avoid mutating globals"
+
+---
+
+# "Does the GIL make your Ruby code thread-safe?"
+
+**thx Josh Mills**
+
+This is a great tutorial on how Ruby's threads work.
+
+http://www.rubyinside.com/does-the-gil-make-your-ruby-code-thread-safe-6051.html
+
+---
+
+# rubocop-thread_safety
+
+https://github.com/covermymeds/rubocop-thread_safety
+
+Some initial feedback has been: Rubocop can't possibly be sufficient.
+
+ - very high bang for buck
+ - 80/20 rule
+ - hopefully more like 99/1 in this case
+ - help me identify the types of problems rubocop can't find
+
+---
+
+# New Cop
+
+`ThreadSafety/InstanceVariableInClassMethod`
+
+```ruby
+class FollowupFaxer
+  def self.fax(params)
+    @params = params
+    validate(@params)
+    send_fax(@params)
+  end
+end
+```
+
+---
+
+# New Cop
+
+`ThreadSafety/ClassAndModuleAttributes`
+
+```ruby
+class User
+  cattr_accessor :current_user
+end
+```
+
+---
+
+# Other Cops
+
+ - `ThreadSafety/NewThread`
+ - `Style/GlobalVars`
+ - `Style/ClassVars`
+ - `Style/MutableConstant`
+
+---
+
+# Class IVar as a Cache
+
+```ruby
+def self.id_for(short_desc)
+  @cache_of_ids             ||= {}
+  @cache_of_ids[short_desc] ||= find_by_short_description!(short_desc).id
+end
+```
+
+--
+
+count: false
+
+```ruby
+@cache_of_ids ||= {}
+```
+is the same as
+```ruby
+@cache_of_ids = @cache_of_ids || {}
+```
+
+---
+
+# Show how to run it here
+
+
+---
+
+# Thanks
+
+Questions?
+
+---
+
+# Concurrency is even harder than all this, though.
+
+Dashboard's RequestJSON overwriting solved with ActiveRecord `lock_version`
+integer.
+    </textarea>
+    <script src="https://gnab.github.io/remark/downloads/remark-latest.min.js">
+    </script>
+    <script>
+      var slideshow = remark.create();
+    </script>
+  </body>
+</html>
