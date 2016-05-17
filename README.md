@@ -1,4 +1,4 @@
-# Avoiding Thread-Safety Bugs
+# Avoiding Threading Bugs
 
 [Presentation Slides](http://mikegee.github.io/thread-safety)
 
